@@ -1,6 +1,14 @@
 import Image from "next/image";
+import { generateText } from "ai"
+import { google } from "@ai-sdk/google"
 
-export default function Home() {
+
+export default async function Home() {
+  const { text } = await generateText({
+    model: google("models/gemini-2.0-flash-exp"),
+    prompt: "What is love?"
+  })
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -21,7 +29,7 @@ export default function Home() {
             .
           </li>
           <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
+            {text}
           </li>
         </ol>
 
