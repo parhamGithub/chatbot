@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MessageCardProps {
-  content: string;
+  content: React.ReactNode;
   isUser: boolean;
 }
 
@@ -32,7 +32,7 @@ export function MessageCard({ content, isUser }: MessageCardProps) {
         )}
       >
         <CardContent className="p-4">
-          <p>{content}</p>
+          {content}
         </CardContent>
       </Card>
     </div>
