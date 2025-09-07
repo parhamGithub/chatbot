@@ -3,12 +3,11 @@ import { ChatInterface } from "./ChatInterface";
 
 export function Chatbox() {
   return (
-    <div className="w-full flex justify-center items-center">
-      <Card className="w-full h-[700px] flex flex-col">
+    <div className="w-full flex justify-center">
+      <Card className="w-full flex flex-col">
         <CardHeader className="w-full">
-          <CardTitle>Chatbot</CardTitle>
+          <CardTitle className="bolder pt-5 text-3xl text-center">Chatbot</CardTitle>
         </CardHeader>
-
         <ChatInterface />
       </Card>
     </div>
