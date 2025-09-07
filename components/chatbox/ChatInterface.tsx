@@ -75,12 +75,14 @@ export function ChatInterface() {
                 key={index}
                 content={<p>{message.content}</p>}
                 isUser={message.isUser}
+                latestIndex={index === messages.length - 1}
               />
             ))
           ) : (
             <MessageCard
               content={<p>Hey, how can I help you?</p>}
               isUser={false}
+              latestIndex={true}
             />
           )
         }
@@ -88,6 +90,7 @@ export function ChatInterface() {
           <MessageCard
             content={<SyncLoader size={10} color="#ffffff" speedMultiplier={.7} />}
             isUser={false}
+            latestIndex={true}
           />
         )}
         <div ref={messagesEndRef} />
