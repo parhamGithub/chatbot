@@ -8,13 +8,14 @@ export async function POST(req: Request) {
   const { prompt } = await req.json();
 
   try {
-    const { text } = await generateText({
+    const { response } = await generateText({
       model: google("models/gemini-2.5-flash"),
       prompt,
+      
     });
 
     // Return the AI's response
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify({ text: response.messages[0].content[0].text }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
