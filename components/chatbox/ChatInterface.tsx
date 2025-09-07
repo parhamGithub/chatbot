@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCard } from "@/components/chatbox/MessageCard";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { SyncLoader } from "react-spinners";
-import { ChatInput } from "./chatInput";
+import { GradientBorder } from "../tools/gradientBorder";
 
 interface Message {
   content: string;
@@ -94,9 +94,20 @@ export function ChatInterface() {
       </CardContent>
       <CardFooter className="w-full flex items-center space-x-2 p-4 border-t">
         <form onSubmit={handleSubmit} className="flex w-full space-x-2">
-          
-          <ChatInput input={input} setInput={setInput} />
-          <Button type="submit">Send</Button>
+          <GradientBorder classNameP="flex-9">
+            <Input
+              placeholder="Type your message..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="text-white focus:outline-none focus:ring-0 focus:ring-offset-0"
+            />
+          </GradientBorder>
+            <Button
+              type="submit"
+              className="w-full cursor-pointer flex-1"
+            >
+              Send
+            </Button>
         </form>
       </CardFooter>
     </>
