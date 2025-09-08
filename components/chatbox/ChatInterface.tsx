@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MessageCard } from "@/components/chatbox/MessageCard";
@@ -14,13 +14,20 @@ export function ChatInterface() {
 
   const { messages, sendMessage, status } = useChat();
 
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    sendMessage({ text: input });
+    setInput("");
+    scrollToBottom();
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, []);
 
   return (
     <>
@@ -62,9 +69,7 @@ export function ChatInterface() {
       <CardFooter className="w-full flex items-center space-x-2 p-4 border-t">
         <form
           onSubmit={(e) => {
-            e.preventDefault();
-            sendMessage({ text: input });
-            setInput("");
+            handleSubmit(e);
           }}
           className="flex w-full space-x-2"
         >
