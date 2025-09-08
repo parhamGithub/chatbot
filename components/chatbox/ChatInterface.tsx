@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, FormEvent } from "react";
+import { FaStop } from "react-icons/fa";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MessageCard } from "@/components/chatbox/MessageCard";
@@ -12,7 +13,7 @@ export function ChatInterface() {
   const [input, setInput] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, stop } = useChat();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,8 +82,26 @@ export function ChatInterface() {
               className="text-white focus:outline-none focus:ring-0 focus:ring-offset-0"
             />
           </GradientBorder>
-          <Button type="submit" className="w-full cursor-pointer flex-1">
+          <Button
+            type="submit"
+            className={
+              !(status === "submitted")
+                ? "w-full cursor-pointer flex-1"
+                : "hidden"
+            }
+          >
             Send
+          </Button>
+          <Button
+            type="button"
+            className={
+              status === "streaming" || status === "submitted"
+                ? "w-full cursor-pointer flex-1"
+                : "hidden"
+            }
+            onClick={stop}
+          >
+            <FaStop />
           </Button>
         </form>
       </CardFooter>
