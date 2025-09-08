@@ -16,6 +16,8 @@ export async function POST(req: Request) {
 
     return result.toUIMessageStreamResponse();
   } catch (err) {
+    console.error("Failed to stream text:", err);
+
     return NextResponse.json(
       {
         error: "An error occurred while processing your request.",

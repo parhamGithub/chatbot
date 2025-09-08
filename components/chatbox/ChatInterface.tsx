@@ -35,7 +35,7 @@ export function ChatInterface() {
                       key={message.id}
                       content={<p>{part.text}</p>}
                       isUser={message.role === "user"}
-                      latestIndex={index === messages.length - 1}
+                      lastIndex={index === messages.length - 1}
                     />
                   );
               }
@@ -45,7 +45,7 @@ export function ChatInterface() {
           <MessageCard
             content={<p>Hey, how can I help you?</p>}
             isUser={false}
-            latestIndex={true}
+            lastIndex={true}
           />
         )}
         {status === "submitted" && (
@@ -54,7 +54,7 @@ export function ChatInterface() {
               <SyncLoader size={10} color="#ffffff" speedMultiplier={0.7} />
             }
             isUser={false}
-            latestIndex={true}
+            lastIndex={true}
           />
         )}
         <div ref={messagesEndRef} />

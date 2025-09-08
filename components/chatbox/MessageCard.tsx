@@ -6,13 +6,13 @@ import { GradientBorder } from "../tools/gradientBorder";
 interface MessageCardProps {
   content: React.ReactNode;
   isUser: boolean;
-  latestIndex?: boolean;
+  lastIndex?: boolean;
 }
 
 export function MessageCard({
   content,
   isUser,
-  latestIndex = false,
+  lastIndex = false,
 }: MessageCardProps) {
   return (
     <div
@@ -29,9 +29,9 @@ export function MessageCard({
         />
         <AvatarFallback>{isUser ? "U" : "B"}</AvatarFallback>
       </Avatar>
-      {!isUser && latestIndex ? (
+      {!isUser && lastIndex ? (
         <GradientBorder
-          classNameP={`rounded-bl-none w-fit max-w-1/2`}
+          classNameP={`w-fit max-w-1/2`}
           rounded="3xl rounded-bl-none"
         >
           <Card
