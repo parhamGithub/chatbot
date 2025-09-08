@@ -1,94 +1,58 @@
 "use client";
-import { useState, useRef, useEffect, FormEvent } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MessageCard } from "@/components/chatbox/MessageCard";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { SyncLoader } from "react-spinners";
 import { GradientBorder } from "../tools/gradientBorder";
-
-interface Message {
-  content: string;
-  isUser: boolean;
-}
+import { useChat } from "@ai-sdk/react";
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [input, setInput] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const { messages, sendMessage, status } = useChat();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(scrollToBottom, [messages]);
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    if (!input.trim()) {
-      setIsLoading(false);
-      return;
-    };
-  
-    const userMessage: Message = { content: input, isUser: true };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-    setInput("");
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input }),
-      });
-      
-      if (!response.ok) {
-        setIsLoading(false);
-        throw new Error("API call failed");
-      }
-      
-      const { text } = await response.json();
-      setIsLoading(false);
-      const botMessage: Message = { content: text, isUser: false };
-      setMessages((prevMessages) => [...prevMessages, botMessage]);
-
-    } catch (error) {
-      console.error("Failed to get AI response:", error);
-      const errorMessage: Message = {
-        content: "Error: Could not get a response from the bot.",
-        isUser: false,
-      };
-      setIsLoading(false);
-      setMessages((prevMessages) => [...prevMessages, errorMessage]);
-    }
-  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <>
       <CardContent className="overflow-y-auto w-full flex-1 space-y-4 p-6 pt-0">
-        {
-          messages.length > 0 ?
-          (
-            messages.map((message, index) => (
-              <MessageCard
-                key={index}
-                content={<p>{message.content}</p>}
-                isUser={message.isUser}
-                latestIndex={index === messages.length - 1}
-              />
-            ))
-          ) : (
-            <MessageCard
-              content={<p>Hey, how can I help you?</p>}
-              isUser={false}
-              latestIndex={true}
-            />
+        {messages.length > 0 ? (
+          messages.map((message, index) =>
+            message.parts.map((part) => {
+              switch (part.type) {
+                case "text":
+                  return (
+                    <MessageCard
+                      key={message.id}
+                      content={<p>{part.text}</p>}
+                      isUser={message.role === "user"}
+                      latestIndex={index === messages.length - 1}
+                    />
+                  );
+              }
+            })
           )
-        }
-        {isLoading && (
+        ) : (
           <MessageCard
-            content={<SyncLoader size={10} color="#ffffff" speedMultiplier={.7} />}
+            content={<p>Hey, how can I help you?</p>}
+            isUser={false}
+            latestIndex={true}
+          />
+        )}
+        {status === "submitted" && (
+          <MessageCard
+            content={
+              <SyncLoader size={10} color="#ffffff" speedMultiplier={0.7} />
+            }
             isUser={false}
             latestIndex={true}
           />
@@ -96,21 +60,25 @@ export function ChatInterface() {
         <div ref={messagesEndRef} />
       </CardContent>
       <CardFooter className="w-full flex items-center space-x-2 p-4 border-t">
-        <form onSubmit={handleSubmit} className="flex w-full space-x-2">
-          <GradientBorder classNameP="flex-9">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendMessage({ text: input });
+            setInput("");
+          }}
+          className="flex w-full space-x-2"
+        >
+          <GradientBorder classNameP="flex-9" rounded="lg">
             <Input
               placeholder="Type your message..."
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setInput(e.currentTarget.value)}
               className="text-white focus:outline-none focus:ring-0 focus:ring-offset-0"
             />
           </GradientBorder>
-            <Button
-              type="submit"
-              className="w-full cursor-pointer flex-1"
-            >
-              Send
-            </Button>
+          <Button type="submit" className="w-full cursor-pointer flex-1">
+            Send
+          </Button>
         </form>
       </CardFooter>
     </>

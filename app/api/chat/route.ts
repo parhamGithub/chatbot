@@ -1,29 +1,26 @@
-import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
+import { streamText, UIMessage, convertToModelMessages } from "ai";
+import { NextResponse } from "next/server";
 
-// Set the runtime to 'edge' for better performance
-export const runtime = "edge";
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { prompt } = await req.json();
-
   try {
-    const { response } = await generateText({
+    const { messages }: { messages: UIMessage[] } = await req.json();
+
+    const result = streamText({
       model: google("models/gemini-2.5-flash"),
-      prompt,
-      
+      messages: convertToModelMessages(messages),
     });
 
-    // Return the AI's response
-    return new Response(JSON.stringify({ text: response.messages[0].content[0].text }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    // Handle errors gracefully
-    return new Response(JSON.stringify({ error: "Failed to generate text" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return result.toUIMessageStreamResponse();
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: "An error occurred while processing your request.",
+      },
+      { status: 500 }
+    );
   }
 }
