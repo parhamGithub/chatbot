@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, FormEvent } from "react";
+import Image from "next/image";
 import { FaStop } from "react-icons/fa";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,17 +9,31 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 import { SyncLoader } from "react-spinners";
 import { GradientBorder } from "../tools/gradientBorder";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
+  const [files, setFiles] = useState<FileList | undefined>(undefined);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, stop } = useChat();
+  const { messages, sendMessage, status, stop } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
+  });
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    sendMessage({ text: input });
+    sendMessage({ text: input, files });
     setInput("");
+    setFiles(undefined);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
     scrollToBottom();
   };
 
@@ -32,10 +47,10 @@ export function ChatInterface() {
 
   return (
     <>
-      <CardContent className="overflow-y-auto w-full flex-1 space-y-4 p-6 pt-0">
+      <CardContent className="w-full flex flex-col space-y-4 p-6 pt-0">
         {messages.length > 0 ? (
           messages.map((message, index) =>
-            message.parts.map((part) => {
+            message.parts.map((part, i) => {
               switch (part.type) {
                 case "text":
                   return (
@@ -46,6 +61,32 @@ export function ChatInterface() {
                       lastIndex={index === messages.length - 1}
                     />
                   );
+                case "file":
+                  if (part.mediaType?.startsWith("image/")) {
+                    return (
+                      <Image
+                        key={`${message.id}-${index}-${i}`}
+                        src={part.url}
+                        alt={part.filename ?? `attachment-${index}`}
+                        width={200}
+                        height={200}
+                        className={message.role === "user" ? "self-end" : ""}
+                      />
+                    );
+                  }
+                  if (part.mediaType?.startsWith("application/pdf")) {
+                    return (
+                      <iframe
+                        key={`${message.id}-${index}-${i}`}
+                        src={part.url}
+                        width={100}
+                        height={150}
+                        title={part.filename ?? `attachment-${index}`}
+                        className={message.role === "user" ? "self-end" : ""}
+                      />
+                    );
+                  }
+                  return null;
               }
             })
           )
@@ -74,6 +115,18 @@ export function ChatInterface() {
           }}
           className="flex w-full space-x-2"
         >
+          <Input
+            id="picture"
+            type="file"
+            className="flex-1"
+            multiple
+            onChange={(e) => {
+              if (e.target.files) {
+                setFiles(e.target.files);
+              }
+            }}
+            ref={fileInputRef}
+          />
           <GradientBorder classNameP="flex-9" rounded="lg">
             <Input
               placeholder="Type your message..."
