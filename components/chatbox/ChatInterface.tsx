@@ -43,7 +43,7 @@ export function ChatInterface() {
 
   useEffect(() => {
     scrollToBottom();
-  }, []);
+  }, [messages]);
 
   return (
     <>
