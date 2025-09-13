@@ -10,6 +10,7 @@ import { SyncLoader } from "react-spinners";
 import { GradientBorder } from "../tools/gradientBorder";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import { FaRegTrashAlt } from "react-icons/fa";
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -18,7 +19,7 @@ export function ChatInterface() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const { messages, sendMessage, status, stop, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
     }),
@@ -37,6 +38,10 @@ export function ChatInterface() {
     scrollToBottom();
   };
 
+  const handleDelete = (id: string) => {
+    setMessages(messages.filter((message) => message.id !== id));
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -53,13 +58,24 @@ export function ChatInterface() {
             message.parts.map((part, i) => {
               switch (part.type) {
                 case "text":
+                  const lastIndex = index === messages.length - 1;
                   return (
-                    <MessageCard
+                    <div
                       key={message.id}
-                      content={<p>{part.text}</p>}
-                      isUser={message.role === "user"}
-                      lastIndex={index === messages.length - 1}
-                    />
+                      className={`flex w-full flex-col gap-4 ${
+                        message.role === "user" ? "items-end" : ""
+                      }`}
+                    >
+                      <MessageCard
+                        content={<p>{part.text}</p>}
+                        isUser={message.role === "user"}
+                        lastIndex={lastIndex}
+                      />
+                      <FaRegTrashAlt
+                        className={`cursor-pointer mx-15`}
+                        onClick={() => handleDelete(message.id)}
+                      />
+                    </div>
                   );
                 case "file":
                   if (part.mediaType?.startsWith("image/")) {
