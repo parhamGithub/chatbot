@@ -11,6 +11,7 @@ import { GradientBorder } from "../tools/gradientBorder";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { FaRedo } from "react-icons/fa";
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -36,6 +37,32 @@ export function ChatInterface() {
     }
 
     scrollToBottom();
+  };
+
+  const handleRegenerate = () => {
+    const lastUserMessageIndex = messages
+      .slice()
+      .reverse()
+      .findIndex((m) => m.role === "user");
+
+    if (lastUserMessageIndex !== -1) {
+      const originalUserIndex = messages.length - 1 - lastUserMessageIndex;
+      const lastUserMessage = messages[originalUserIndex];
+
+      const textPart = lastUserMessage.parts.find(
+        (part) => part.type === "text"
+      );
+
+      if (textPart && textPart.type === "text") {
+        const newMessages = messages.filter(
+          (m, index) =>
+            index !== messages.length - 1 && index !== originalUserIndex
+        );
+
+        setMessages(newMessages);
+        sendMessage({ text: textPart.text, files });
+      }
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -71,10 +98,18 @@ export function ChatInterface() {
                         isUser={message.role === "user"}
                         lastIndex={lastIndex}
                       />
-                      <FaRegTrashAlt
-                        className={`cursor-pointer mx-15`}
-                        onClick={() => handleDelete(message.id)}
-                      />
+                      <div className="mx-15 flex gap-4">
+                        <FaRegTrashAlt
+                          className="cursor-pointer"
+                          onClick={() => handleDelete(message.id)}
+                        />
+                        <FaRedo
+                          className={`cursor-pointer ${
+                            message.role === "user" ? "hidden" : ""
+                          }`}
+                          onClick={handleRegenerate}
+                        />
+                      </div>
                     </div>
                   );
                 case "file":
