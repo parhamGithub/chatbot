@@ -20,11 +20,12 @@ export function ChatInterface() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status, stop, setMessages } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-    }),
-  });
+  const { messages, sendMessage, status, stop, setMessages, regenerate } =
+    useChat({
+      transport: new DefaultChatTransport({
+        api: "/api/chat",
+      }),
+    });
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,29 +41,7 @@ export function ChatInterface() {
   };
 
   const handleRegenerate = () => {
-    const lastUserMessageIndex = messages
-      .slice()
-      .reverse()
-      .findIndex((m) => m.role === "user");
-
-    if (lastUserMessageIndex !== -1) {
-      const originalUserIndex = messages.length - 1 - lastUserMessageIndex;
-      const lastUserMessage = messages[originalUserIndex];
-
-      const textPart = lastUserMessage.parts.find(
-        (part) => part.type === "text"
-      );
-
-      if (textPart && textPart.type === "text") {
-        const newMessages = messages.filter(
-          (m, index) =>
-            index !== messages.length - 1 && index !== originalUserIndex
-        );
-
-        setMessages(newMessages);
-        sendMessage({ text: textPart.text, files });
-      }
-    }
+    regenerate();
   };
 
   const handleDelete = (id: string) => {
