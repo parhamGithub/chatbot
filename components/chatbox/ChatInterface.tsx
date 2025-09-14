@@ -181,7 +181,7 @@ const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, mult
               <p>Drag 'n' drop some files here, or click to select files</p>
             )}
           </div>
-          <GradientBorder classNameP="flex-8" rounded="lg">
+          <GradientBorder classNameP="flex-8">
             <Input
               placeholder="Type your message..."
               value={input}

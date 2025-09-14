@@ -32,7 +32,7 @@ export function MessageCard({
       {!isUser && lastIndex ? (
         <GradientBorder
           classNameP={`w-fit max-w-1/2`}
-          rounded="3xl rounded-bl-none"
+          rounded="rounded-3xl rounded-bl-none"
         >
           <Card
             className={cn(
