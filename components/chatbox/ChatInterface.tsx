@@ -13,6 +13,7 @@ import { DefaultChatTransport } from "ai";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FaRedo } from "react-icons/fa";
 import { FormattedMessage } from "../tools/formattedMessage";
+import { useDropzone } from 'react-dropzone'
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -40,6 +41,15 @@ export function ChatInterface() {
 
     scrollToBottom();
   };
+
+  const onDrop = (acceptedFiles: File[]) => {
+    // Convert the acceptedFiles array to a FileList
+    const dataTransfer = new DataTransfer();
+    acceptedFiles.forEach(file => dataTransfer.items.add(file));
+    setFiles(dataTransfer.files);
+  };
+
+const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: true })
 
   const handleRegenerate = () => {
     regenerate();
@@ -157,19 +167,21 @@ export function ChatInterface() {
           }}
           className="flex w-full space-x-2"
         >
-          <Input
-            id="picture"
-            type="file"
-            className="flex-1"
-            multiple
-            onChange={(e) => {
-              if (e.target.files) {
-                setFiles(e.target.files);
-              }
-            }}
-            ref={fileInputRef}
-          />
-          <GradientBorder classNameP="flex-9" rounded="lg">
+          <div {...getRootProps()}
+            className="flex-1 cursor-pointer rounded-md border border-dashed border-input text-sm
+            text-muted-foreground flex items-center justify-center"
+          >
+            <input id="picture"
+              type="file"
+              {...getInputProps()}
+            />
+            {files && files.length > 0 ? (
+              <span>{files.length} file(s) selected</span>
+            ) : (
+              <p>Drag 'n' drop some files here, or click to select files</p>
+            )}
+          </div>
+          <GradientBorder classNameP="flex-8" rounded="lg">
             <Input
               placeholder="Type your message..."
               value={input}
