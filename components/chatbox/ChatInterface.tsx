@@ -12,6 +12,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FaRedo } from "react-icons/fa";
+import { FormattedMessage } from "../tools/formattedMessage";
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -76,7 +77,7 @@ export function ChatInterface() {
                       }`}
                     >
                       <MessageCard
-                        content={<p>{part.text}</p>}
+                        content={<FormattedMessage>{part.text}</FormattedMessage>}
                         isUser={message.role === "user"}
                         lastIndex={lastIndex}
                       />
