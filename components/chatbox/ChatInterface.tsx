@@ -78,16 +78,23 @@ export function ChatInterface() {
                         lastIndex={lastIndex}
                       />
                       <div className="mx-15 flex gap-4">
-                        <FaRegTrashAlt
-                          className="cursor-pointer"
-                          onClick={() => handleDelete(message.id)}
-                        />
-                        <FaRedo
-                          className={`cursor-pointer ${
-                            message.role === "user" ? "hidden" : ""
-                          }`}
-                          onClick={handleRegenerate}
-                        />
+                        {
+                          message.role === "user"
+                          ? (
+                            <FaRegTrashAlt
+                              className="cursor-pointer"
+                              onClick={() => handleDelete(message.id)}
+                            />
+                          ) : (
+
+                            <FaRedo
+                              className={`cursor-pointer ${
+                                !lastIndex ? "hidden" : ""
+                              }`}
+                              onClick={handleRegenerate}
+                            />
+                          )
+                        }
                       </div>
                     </div>
                   );
