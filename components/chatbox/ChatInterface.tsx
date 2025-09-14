@@ -57,7 +57,7 @@ export function ChatInterface() {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    scrollToBottom();    
   }, [messages]);
 
   return (
@@ -68,6 +68,8 @@ export function ChatInterface() {
             message.parts.map((part, i) => {
               switch (part.type) {
                 case "text":
+                  console.log("Messages updated:", messages)
+                  
                   const lastIndex = index === messages.length - 1;
                   return (
                     <div
@@ -89,16 +91,15 @@ export function ChatInterface() {
                               className="cursor-pointer"
                               onClick={() => handleDelete(message.id)}
                             />
-                          ) : (
+                          ) : null
 
-                            <FaRedo
-                              className={`cursor-pointer ${
-                                !lastIndex ? "hidden" : ""
-                              }`}
-                              onClick={handleRegenerate}
-                            />
-                          )
                         }
+                        <FaRedo
+                          className={`cursor-pointer ${
+                            !lastIndex ? "hidden" : ""
+                          }`}
+                          onClick={handleRegenerate}
+                        />
                       </div>
                     </div>
                   );
