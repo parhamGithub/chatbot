@@ -45,7 +45,10 @@ export function ChatInterface() {
   };
 
   const handleDelete = (id: string) => {
-    setMessages(messages.filter((message) => message.id !== id));
+    const index = messages.findIndex((message) => message.id === id);
+    if (index !== -1) {
+      setMessages(messages.slice(0, index));
+    }
   };
 
   const scrollToBottom = () => {
