@@ -169,7 +169,7 @@ const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, mult
         >
           <div {...getRootProps()}
             className="flex-1 cursor-pointer rounded-md border border-dashed border-input text-sm
-            text-muted-foreground flex items-center justify-center"
+            text-muted-foreground flex items-center px-2 justify-center"
           >
             <input id="picture"
               type="file"
@@ -186,14 +186,14 @@ const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, mult
               placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.currentTarget.value)}
-              className="text-white focus:outline-none focus:ring-0 focus:ring-offset-0"
+              className="focus:outline-none focus:ring-0 focus:ring-offset-0"
             />
           </GradientBorder>
           <Button
             type="submit"
             className={
               !(status === "submitted")
-                ? "w-full cursor-pointer flex-1"
+                ? "w-full cursor-pointer flex-1 items-center justify-center m-auto"
                 : "hidden"
             }
           >
@@ -203,7 +203,7 @@ const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, mult
             type="button"
             className={
               status === "streaming" || status === "submitted"
-                ? "w-full cursor-pointer flex-1"
+                ? "w-full cursor-pointer flex-1 items-center justify-center m-auto"
                 : "hidden"
             }
             onClick={stop}
