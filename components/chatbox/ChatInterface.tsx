@@ -21,7 +21,6 @@ export function ChatInterface() {
   const [input, setInput] = useState<string>("");
   const [files, setFiles] = useState<FileList | undefined>(undefined);
   const [chatId, setChatId] = useState<string | null>(null);
-  const [isRegenerating, setIsGenerating] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -68,29 +67,23 @@ export function ChatInterface() {
         const textPart = message.parts.find(
           (part) => part.type === "text",
         );
-
-        if (isRegenerating) {
-          setIsGenerating(false);
-          return;
-        } else {
-          if (textPart) {
-            // Send the assistant's message to the server for saving
-            await fetch("/api/message", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                content: textPart.text,
-                role: "assistant",
-                chatId: chatId,
-              }),
-            });
-          }
+        
+        if (textPart) {
+          // Send the assistant's message to the server for saving
+          await fetch("/api/message", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: textPart.text,
+              role: "assistant",
+              chatId: chatId,
+            }),
+          });
         }
-
-       
       }
+      
     });
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -131,31 +124,18 @@ export function ChatInterface() {
         return;
     }
 
-    if (lastMessage.role === "assistant") {
-      try {
-        await fetch('/api/chat/db', {
-          method: 'DELETE',
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id: lastMessage.id }),
-        });
-      } catch (error) {
-        console.error("Failed to delete message:", error);
-      }
-    }
-    
+    handleDelete(lastMessage.id);
+    handleDelete(userMessage.id);
     regenerate();
   };
 
   const handleDelete = async (id: string) => {
     const index = messages.findIndex((message) => message.id === id);
-
     try {
       await fetch('/api/message', {
         method: 'DELETE',
         headers: {
-            "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: messages[index].id }),
       });

@@ -67,9 +67,6 @@ export async function POST(request: Request) {
   });
 }
 
-// @/app/api/message/route.tsx
-// ... (imports)
-
 export async function DELETE(request: Request) {
   const body = await request.json();
   const { id } = body;
@@ -86,14 +83,11 @@ export async function DELETE(request: Request) {
       },
     });
   } catch (error) {
-    // Check if the error is a Prisma record not found error
-    // if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') {
-        return new Response("Message not found", { status: 404 });
-      }
+    if (error.code === 'P2025') {
+      return new Response("Message not found", { status: 404 });
     }
-    // Return a generic 500 for all other server errors
-    console.error("Error deleting message:", error);
-    return new Response("Failed to delete message", { status: 500 });
-  
+  }
+  // Return a generic 500 for all other server errors
+  console.error("Error deleting message:", error);
+  return new Response("Failed to delete message", { status: 500 });
 }
