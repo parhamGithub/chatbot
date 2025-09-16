@@ -1,36 +1,8 @@
-// import { google } from "@ai-sdk/google";
-// import { streamText, UIMessage, convertToModelMessages } from "ai";
-// import { NextResponse } from "next/server";
-
-// // Allow streaming responses up to 30 seconds
-// export const maxDuration = 30;
-
-// export async function POST(req: Request) {
-//   try {
-//     const { messages }: { messages: UIMessage[] } = await req.json();
-
-//     const result = streamText({
-//       model: google("models/gemini-2.5-flash"),
-//       messages: convertToModelMessages(messages),
-//     });
-
-//     return result.toUIMessageStreamResponse();
-//   } catch (err) {
-//     console.error("Failed to stream text:", err);
-
-//     return NextResponse.json(
-//       {
-//         error: "An error occurred while processing your request.",
-//       },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-import { convertToModelMessages, streamText } from "ai";
+import { convertToModelMessages, streamText, UIMessage } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { MODEL } from "@/generated/prisma";
 import { openai } from "@ai-sdk/openai";
+import { prisma } from "@/prisma/prisma";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -42,6 +14,16 @@ export async function POST(req: Request) {
     name: "google/gemini-2.0-flash-001",
     baseURL: "https://ai.liara.ir/api/v1/68461303f45c00abaa4c320f",
     apiKey: process.env.API_TOKEN,
+  });
+
+  const lastMessage = messages[messages.length - 1] as UIMessage
+
+  const userMessage = await prisma.message.create({
+    data: {
+      content: lastMessage?.parts?.find(part => part.type === 'text')?.text || '',
+      role: "user",
+      chatId: "cmfmf4qq30000vfb05w8acl7f",
+    },
   });
 
   // const openAi4 = createOpenAICompatible({

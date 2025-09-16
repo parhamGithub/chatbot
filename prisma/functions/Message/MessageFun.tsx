@@ -4,7 +4,6 @@ export async function Message_GetById(id: string) {
   const message = await prisma.message.findUnique({
     where: { id },
     include: {
-      // user: true,
       result: true,
       Attachments: true, // Include attachments if needed
     },
@@ -21,7 +20,6 @@ export async function Message_GetByChatId(chatId: string) {
   const messages = await prisma.message.findMany({
     where: { chatId },
     include: {
-      // user: true,
       result: true,
       Attachments: true, // Include attachments if needed
     },
@@ -39,7 +37,6 @@ export type Message_GetByChatId = Awaited<
 export async function Message_GetAll() {
   const messages = await prisma.message.findMany({
     include: {
-      // user: true,
       result: true,
       Attachments: true, // Include attachments if needed
     },
@@ -57,12 +54,10 @@ export async function Message_Create(data: {
   content: string;
   role: "user" | "assistant";
   chatId: string;
-  userId: string;
 }) {
   const message = await prisma.message.create({
     data,
     include: {
-      // user: true,
       result: true,
       Attachments: true, // Include attachments if needed
     },
@@ -79,7 +74,6 @@ export async function Message_CreateWithAttachment(data: {
   content: string;
   role: "user" | "assistant";
   chatId: string;
-  // userId: string;
   attachments?: FileList;
 }) {
   const { content, role, chatId, attachments } = data;
@@ -90,10 +84,8 @@ export async function Message_CreateWithAttachment(data: {
       content,
       role,
       chatId,
-      // userId,
     },
     include: {
-      // user: true,
       result: true,
       Attachments: true, // Include attachments if needed
     },
@@ -128,7 +120,6 @@ export async function Message_Update(
     where: { id },
     data,
     include: {
-      // user: true,
       result: true,
       Attachments: true, // Include attachments if needed
     },
@@ -141,3 +132,16 @@ export async function Message_Update(
 }
 
 export type Message_Update = Awaited<ReturnType<typeof Message_Update>>;
+
+export async function Message_Delete(id: string) {
+  const message = await prisma.message.delete({
+    where: { id },
+  });
+
+  if (!message) {
+    throw new Error("Failed to delete message");
+  }
+  return message;
+}
+
+export type Message_Delete = Awaited<ReturnType<typeof Message_Delete>>;

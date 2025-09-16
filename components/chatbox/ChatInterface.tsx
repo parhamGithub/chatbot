@@ -14,24 +14,93 @@ import { FaRegTrashAlt } from "react-icons/fa";
 import { FaRedo } from "react-icons/fa";
 import { FormattedMessage } from "../tools/formattedMessage";
 import { useDropzone } from 'react-dropzone'
-import { Chat_GetAll, Chat_Create } from "@/prisma/functions/Chat/ChatFun";
+import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
+import { Message } from "@/generated/prisma";
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
   const [files, setFiles] = useState<FileList | undefined>(undefined);
+  const [chatId, setChatId] = useState<string | null>(null);
+  const [isRegenerating, setIsGenerating] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // This effect runs once when the component mounts to get or create the chat ID
+    const initializeChat = async () => {
+      try {
+        const response = await fetch("/api/chat/db");
+        
+        if (!response.ok) {
+          throw new Error("Failed to get or create chat");
+        }
+        const chat = await response.json() as Chat_GetById;
+        console.log(chat);
+        
+        setChatId(chat?.id || "");
+        setMessages(
+          (chat?.Messages || []).map((msg: Message) => ({
+            id: msg.id ?? "",
+            role: msg.role == "user" ? "user" : "assistant",
+            parts: [
+              {
+                type: "text",
+                text: msg.content ?? "",
+              },
+            ],
+          }))
+        );
+      } catch (error) {
+        console.error("Initialization error:", error);
+      }
+    };
+
+    initializeChat();
+  }, []);
 
   const { messages, sendMessage, status, stop, setMessages, regenerate } =
     useChat({
       transport: new DefaultChatTransport({
         api: "/api/chat",
       }),
+      onFinish: async ({message}) => {
+        const textPart = message.parts.find(
+          (part) => part.type === "text",
+        );
+
+        if (isRegenerating) {
+          setIsGenerating(false);
+          return;
+        } else {
+          if (textPart) {
+            // Send the assistant's message to the server for saving
+            await fetch("/api/message", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                content: textPart.text,
+                role: "assistant",
+                chatId: chatId,
+              }),
+            });
+          }
+        }
+
+       
+      }
     });
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!input.trim() || !chatId) {
+      return;
+    }
+
+    // Now send the message and files to the AI
     sendMessage({ text: input, files });
     setInput("");
     setFiles(undefined);
@@ -50,16 +119,50 @@ export function ChatInterface() {
     setFiles(dataTransfer.files);
   };
 
-const { getRootProps, getInputProps } = useDropzone({ onDrop, multiple: true })
+  const { getRootProps, getInputProps } = useDropzone({ onDrop, multiple: true });
 
-  const handleRegenerate = () => {
+  const handleRegenerate = async () => {
+    // Find the last assistant message and the user message that came before it
+    const lastMessage = messages[messages.length - 1];
+    const userMessage = messages[messages.length - 2];
+
+    if (!userMessage) {
+        // No user message to regenerate from, do nothing
+        return;
+    }
+
+    if (lastMessage.role === "assistant") {
+      try {
+        await fetch('/api/chat/db', {
+          method: 'DELETE',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id: lastMessage.id }),
+        });
+      } catch (error) {
+        console.error("Failed to delete message:", error);
+      }
+    }
+    
     regenerate();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const index = messages.findIndex((message) => message.id === id);
-    if (index !== -1) {
-      setMessages(messages.slice(0, index));
+
+    try {
+      await fetch('/api/message', {
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: messages[index].id }),
+      });
+      // Remove the message from local state
+      setMessages((prevMessages) => prevMessages.filter((message) => message.id !== id));
+    } catch (error) {
+      console.error("Failed to delete message:", error);
     }
   };
 
@@ -95,16 +198,12 @@ const { getRootProps, getInputProps } = useDropzone({ onDrop, multiple: true })
                         lastIndex={lastIndex}
                       />
                       <div className="mx-15 flex gap-4">
-                        {
-                          message.role === "user"
-                          ? (
-                            <FaRegTrashAlt
-                              className="cursor-pointer"
-                              onClick={() => handleDelete(message.id)}
-                            />
-                          ) : null
 
-                        }
+                        <FaRegTrashAlt
+                          className="cursor-pointer"
+                          onClick={() => handleDelete(message.id)}
+                        />
+
                         <FaRedo
                           className={`cursor-pointer ${
                             !lastIndex ? "hidden" : ""

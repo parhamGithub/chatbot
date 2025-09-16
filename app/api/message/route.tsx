@@ -1,7 +1,9 @@
+// @/app/api/message/route.tsx
 // import { GetUser } from "@/auth/AuthFunctions";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import {
   Message_CreateWithAttachment,
+  Message_Delete,
   Message_GetById
 } from "@/prisma/functions/Message/MessageFun";
 // import { cookies } from "next/headers";
@@ -9,13 +11,10 @@ import {
 export async function GET(request: Request) {
   // get id from request
   const url = new URL(request.url);
-  const id = url.searchParams.get("id");
-  if (!id) {
-    return new Response("ID is required", { status: 400 });
-  }
 
   // fetch the chat from the database
-  const message = await Message_GetById(id);
+  const message = await Message_GetById("cmfmf4qq30000vfb05w8acl7f");
+  
   if (!message) {
     return new Response("Message not found", { status: 404 });
   }
@@ -36,41 +35,24 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { content, role, chatId, attachments } = body;
-  if (!content || !role || !chatId) {
+  
+  const { content, role,  attachments } = body;
+  if (!content || !role ) {
     return new Response("Content, role, and chatId are required", {
       status: 400,
     });
   }
-  // const cookie = await cookies();
-  // const token = cookie.get("token")?.value;
-  // if (!token) {
-  //   return new Response("You need to be logged in to create a message.", {
-  //     status: 401,
-  //   });
-  // }
-  // const user = await GetUser(token);
-  // if (!user) {
-  //   return new Response("Invalid user token.", { status: 401 });
-  // }
-  const chat = await Chat_GetById(chatId);
+
+  const chat = await Chat_GetById("cmfmf4qq30000vfb05w8acl7f");
   if (!chat) {
     return new Response("Chat not found", { status: 404 });
   }
-  // if (chat.userId !== user.id) {
-  //   return new Response(
-  //     "You are not authorized to create a message in this chat.",
-  //     {
-  //       status: 403,
-  //     },
-  //   );
-  // }
+
   // create the message
   const newMessage = await Message_CreateWithAttachment({
     content,
     role,
-    chatId,
-    // userId: user.id,
+    chatId:"cmfmf4qq30000vfb05w8acl7f",
     attachments: attachments,
   });
   if (!newMessage) {
@@ -83,4 +65,35 @@ export async function POST(request: Request) {
       "Content-Type": "application/json",
     },
   });
+}
+
+// @/app/api/message/route.tsx
+// ... (imports)
+
+export async function DELETE(request: Request) {
+  const body = await request.json();
+  const { id } = body;
+  if (!id) {
+    return new Response("Message ID is required", { status: 400 });
+  }
+
+  try {
+    const deletedMessage = await Message_Delete(id);
+    return new Response(JSON.stringify(deletedMessage), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    // Check if the error is a Prisma record not found error
+    // if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        return new Response("Message not found", { status: 404 });
+      }
+    }
+    // Return a generic 500 for all other server errors
+    console.error("Error deleting message:", error);
+    return new Response("Failed to delete message", { status: 500 });
+  
 }

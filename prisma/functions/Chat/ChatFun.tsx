@@ -7,7 +7,6 @@ export async function Chat_GetById(id: string) {
     include: {
       Messages: {
         include: {
-          // user: true,
           result: true,
           Attachments:true
         },
@@ -23,35 +22,11 @@ export async function Chat_GetById(id: string) {
 
 export type Chat_GetById = Awaited<ReturnType<typeof Chat_GetById>>;
 
-// export async function Chat_GetByUserId(userId: string) {
-//   const chats = await prisma.chat.findMany({
-//     where: {
-//       // userId,
-//     },
-//     include: {
-//       Messages: {
-//         include: {
-//           // user: true,
-//           result: true,
-//           Attachments: true,
-//         },
-//       },
-//     },
-//   });
-
-//   if (!chats) {
-//     throw new Error("No chats found for this user");
-//   }
-//   return chats;
-// }
-// export type Chat_GetByUserId = Awaited<ReturnType<typeof Chat_GetByUserId>>;
-
 export async function Chat_GetAll() {
   const chats = await prisma.chat.findMany({
     include: {
       Messages: {
         include: {
-          // user: true,
           result: true,
           Attachments: true,
         },
@@ -69,7 +44,6 @@ export type Chat_GetAll = Awaited<ReturnType<typeof Chat_GetAll>>;
 export async function Chat_Create({title,model}: {title?: string, model?: MODEL}) {
   const chat = await prisma.chat.create({
     data: {
-      // userId,
       title,
       model: model || MODEL.GPT_4_O, // Default to GPT_4_O if no model is provided
     },
