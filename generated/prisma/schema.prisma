@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  phone          String    @unique
+  password       String
+  national_code  String?
+  roleId         String?
+  Role           Role?     @relation(fields: [roleId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  is_deactivated Boolean?  @default(false)
+  last_login     DateTime? @db.Timestamp(6)
+  otp            String?
+  otp_expire     DateTime?
+  // Chats          Chat[]
+  // Message        Message[]
+  // Result         Result[]
+  // Session        Session[]
+  // Notifications  Notification[]
+  // Projects       Project[]
+}
+
+model NewUserOTP {
+  phone      String    @unique
+  otp        String?
+  otp_expire DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Chat {
+  id           String        @id @default(cuid())
+  // userId      String
+  // user        User          @relation(fields: [userId], references: [id])
+  title        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  model        MODEL? // e.g., "gpt-3.5-turbo", "gpt-4"
+  Messages     Message[]
+  Results      Result[]
+  Project      Project?      @relation(fields: [projectId], references: [id])
+  projectId    String?
+  Chat_Modules Chat_Module[]
+}
+
+enum MODEL {
+  GPT_4_O
+  GEMINI_2_FLASH
+  CLAUDE_3_7_SONNET
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  // userId    String
+  // user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  Chats     Chat[]
+}
+
+model Message {
+  id          String       @id @default(cuid())
+  chatId      String
+  chat        Chat         @relation(fields: [chatId], references: [id])
+  // userId      String
+  // user        User         @relation(fields: [userId], references: [id])
+  role        String       @default("user") // e.g., "user", "assistant", "system"
+  content     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  resultId    String?      @unique
+  result      Result?
+  Attachments Attachment[]
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id])
+  url       String?
+  fileName  String
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Result {
+  id        String   @id @default(cuid())
+  // userId    String
+  // user      User     @relation(fields: [userId], references: [id])
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  messageId String   @unique
+  message   Message  @relation(fields: [messageId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  modelId   String?
+  model     Model?   @relation(fields: [modelId], references: [id])
+}
+
+model Model {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  Result    Result[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  // userId    String
+  // user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expires   DateTime
+  token     String   @unique
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  urls        String[]
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Users       User[]
+}
+
+model Module {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  isActive    Boolean       @default(true)
+  urls        String[]
+  icon        String?
+  Chat_Module Chat_Module[]
+}
+
+model Chat_Module {
+  id       String @id @default(cuid())
+  module   Module @relation(fields: [moduleId], references: [id])
+  moduleId String
+  chat     Chat   @relation(fields: [chatId], references: [id])
+  chatId   String
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  // userId    String
+  // user      User     @relation(fields: [userId], references: [id])
+  content   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

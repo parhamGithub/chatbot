@@ -14,6 +14,7 @@ import { FaRegTrashAlt } from "react-icons/fa";
 import { FaRedo } from "react-icons/fa";
 import { FormattedMessage } from "../tools/formattedMessage";
 import { useDropzone } from 'react-dropzone'
+import { Chat_GetAll, Chat_Create } from "@/prisma/functions/Chat/ChatFun";
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -49,7 +50,7 @@ export function ChatInterface() {
     setFiles(dataTransfer.files);
   };
 
-const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: true })
+const { getRootProps, getInputProps } = useDropzone({ onDrop, multiple: true })
 
   const handleRegenerate = () => {
     regenerate();
@@ -152,7 +153,7 @@ const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, mult
         {status === "submitted" && (
           <MessageCard
             content={
-              <SyncLoader size={10} color="#ffffff" speedMultiplier={0.7} />
+              <SyncLoader size={10} className="text-primary" speedMultiplier={0.7} />
             }
             isUser={false}
             lastIndex={true}
