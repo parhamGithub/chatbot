@@ -3,7 +3,6 @@
 import { MODEL } from "@/generated/prisma";
 import {
   Chat_Create,
-  Chat_Delete,
   Chat_GetById,
   Chat_Update,
 } from "@/prisma/functions/Chat/ChatFun";
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   if (!chat) {
     return new Response("Chat creation failed", { status: 500 });
-  }  
+  }
 
   // Return the chat object with its ID
   return new Response(JSON.stringify(chat), {
@@ -30,7 +29,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { title, model } = body;
 
-  const ChatTitle = title 
+  const ChatTitle = title;
 
   const chat = await Chat_Create({
     model: model || MODEL.GPT_4_O,
@@ -82,4 +81,3 @@ export async function PUT(request: NextRequest) {
     },
   });
 }
-
