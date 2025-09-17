@@ -258,7 +258,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\HP-G3\\Documents\\GitHub\\chatbot\\generated\\prisma",
+      "value": "/home/parham/Documents/Nexiino/chatbot/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -267,12 +267,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\HP-G3\\Documents\\GitHub\\chatbot\\prisma\\schema.prisma",
+    "sourceFilePath": "/home/parham/Documents/Nexiino/chatbot/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -286,6 +286,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
