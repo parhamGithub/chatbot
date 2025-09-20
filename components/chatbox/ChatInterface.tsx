@@ -17,6 +17,19 @@ import { useDropzone } from "react-dropzone";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import { Message } from "@/generated/prisma";
 
+function dbMessageToUIMessage(msg: Message) {
+  return {
+    id: msg.id ?? "",
+    role: msg.role === "user" ? ("user" as const) : ("assistant" as const),
+    parts: [
+      {
+        type: "text" as const,
+        text: msg.content ?? "",
+      },
+    ],
+  };
+}
+
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
   const [files, setFiles] = useState<FileList | undefined>(undefined);
@@ -38,18 +51,7 @@ export function ChatInterface() {
       console.log("[initializeChat] Chat fetched:", chat);
 
       setChatId(chat?.id || "");
-      setMessages(
-        (chat?.Messages || []).map((msg: Message) => ({
-          id: msg.id ?? "",
-          role: msg.role == "user" ? "user" : "assistant",
-          parts: [
-            {
-              type: "text",
-              text: msg.content ?? "",
-            },
-          ],
-        }))
-      );
+      setMessages((chat?.Messages || []).map(dbMessageToUIMessage));
       console.log("[initializeChat] Messages set:", chat?.Messages || []);
     } catch (error) {
       console.error("Initialization error:", error);
