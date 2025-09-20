@@ -1,15 +1,13 @@
 // @/app/api/chat/db/route.tsx
-// import { GetUser } from "@/auth/AuthFunctions";
 import { MODEL } from "@/generated/prisma";
 import {
   Chat_Create,
   Chat_GetById,
   Chat_Update,
 } from "@/prisma/functions/Chat/ChatFun";
-// import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const chat = await Chat_GetById("cmfmf4qq30000vfb05w8acl7f");
 
   if (!chat) {

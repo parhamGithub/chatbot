@@ -16,16 +16,6 @@ export async function POST(req: Request) {
     apiKey: process.env.API_TOKEN,
   });
 
-  const lastMessage = messages[messages.length - 1] as UIMessage
-
-  const userMessage = await prisma.message.create({
-    data: {
-      content: lastMessage?.parts?.find(part => part.type === 'text')?.text || '',
-      role: "user",
-      chatId: "cmfmf4qq30000vfb05w8acl7f",
-    },
-  });
-
   // const openAi4 = createOpenAICompatible({
   //   name: "openai/gpt-4.1",
   //   baseURL: "https://ai.liara.ir/api/v1/68461303f45c00abaa4c320f",
