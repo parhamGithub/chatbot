@@ -8,9 +8,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEffect } from "react";
 
 export default function ModeToggle() {
   const { setTheme } = useTheme();
+
+  useEffect(() => {
+    setTheme("system");
+  }, []);
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,9 +32,6 @@ export default function ModeToggle() {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
