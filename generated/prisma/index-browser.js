@@ -120,44 +120,12 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.UserScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  phone: 'phone',
-  password: 'password',
-  national_code: 'national_code',
-  roleId: 'roleId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  is_deactivated: 'is_deactivated',
-  last_login: 'last_login',
-  otp: 'otp',
-  otp_expire: 'otp_expire'
-};
-
-exports.Prisma.NewUserOTPScalarFieldEnum = {
-  phone: 'phone',
-  otp: 'otp',
-  otp_expire: 'otp_expire',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.ChatScalarFieldEnum = {
   id: 'id',
   title: 'title',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  model: 'model',
   projectId: 'projectId'
-};
-
-exports.Prisma.ProjectScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  isActive: 'isActive'
 };
 
 exports.Prisma.MessageScalarFieldEnum = {
@@ -191,51 +159,11 @@ exports.Prisma.ResultScalarFieldEnum = {
   modelId: 'modelId'
 };
 
-exports.Prisma.ModelScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  isActive: 'isActive'
-};
-
-exports.Prisma.SessionScalarFieldEnum = {
-  id: 'id',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  expires: 'expires',
-  token: 'token'
-};
-
 exports.Prisma.RoleScalarFieldEnum = {
   id: 'id',
   name: 'name',
   urls: 'urls',
   permissions: 'permissions',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.ModuleScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  isActive: 'isActive',
-  urls: 'urls',
-  icon: 'icon'
-};
-
-exports.Prisma.Chat_ModuleScalarFieldEnum = {
-  id: 'id',
-  moduleId: 'moduleId',
-  chatId: 'chatId'
-};
-
-exports.Prisma.NotificationScalarFieldEnum = {
-  id: 'id',
-  content: 'content',
-  isRead: 'isRead',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -254,26 +182,14 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-exports.MODEL = exports.$Enums.MODEL = {
-  GPT_4_O: 'GPT_4_O',
-  GEMINI_2_FLASH: 'GEMINI_2_FLASH',
-  CLAUDE_3_7_SONNET: 'CLAUDE_3_7_SONNET'
-};
+
 
 exports.Prisma.ModelName = {
-  User: 'User',
-  NewUserOTP: 'NewUserOTP',
   Chat: 'Chat',
-  Project: 'Project',
   Message: 'Message',
   Attachment: 'Attachment',
   Result: 'Result',
-  Model: 'Model',
-  Session: 'Session',
-  Role: 'Role',
-  Module: 'Module',
-  Chat_Module: 'Chat_Module',
-  Notification: 'Notification'
+  Role: 'Role'
 };
 
 /**
