@@ -13,9 +13,22 @@ import { DefaultChatTransport } from "ai";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { FaRedo } from "react-icons/fa";
 import { FormattedMessage } from "../tools/formattedMessage";
-import { useDropzone } from 'react-dropzone'
+import { useDropzone } from "react-dropzone";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import { Message } from "@/generated/prisma";
+
+function dbMessageToUIMessage(msg: Message) {
+  return {
+    id: msg.id ?? "",
+    role: msg.role === "user" ? ("user" as const) : ("assistant" as const),
+    parts: [
+      {
+        type: "text" as const,
+        text: msg.content ?? "",
+      },
+    ],
+  };
+}
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -25,52 +38,37 @@ export function ChatInterface() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // This effect runs once when the component mounts to get or create the chat ID
-    const initializeChat = async () => {
-      try {
-        const response = await fetch("/api/chat/db");
-        
-        if (!response.ok) {
-          throw new Error("Failed to get or create chat");
-        }
-        const chat = await response.json() as Chat_GetById;
-        console.log(chat);
-        
-        setChatId(chat?.id || "");
-        setMessages(
-          (chat?.Messages || []).map((msg: Message) => ({
-            id: msg.id ?? "",
-            role: msg.role == "user" ? "user" : "assistant",
-            parts: [
-              {
-                type: "text",
-                text: msg.content ?? "",
-              },
-            ],
-          }))
-        );
-      } catch (error) {
-        console.error("Initialization error:", error);
-      }
-    };
+  const initializeChat = async () => {
+    try {
+      console.log("[initializeChat] Fetching chat from DB...");
+      const response = await fetch("/api/chat/db");
 
-    initializeChat();
-  }, []);
+      if (!response.ok) {
+        console.error("[initializeChat] Failed to get or create chat");
+        throw new Error("Failed to get or create chat");
+      }
+      const chat = (await response.json()) as Chat_GetById;
+      console.log("[initializeChat] Chat fetched:", chat);
+
+      setChatId(chat?.id || "");
+      setMessages((chat?.Messages || []).map(dbMessageToUIMessage));
+      console.log("[initializeChat] Messages set:", chat?.Messages || []);
+    } catch (error) {
+      console.error("Initialization error:", error);
+    }
+  };
 
   const { messages, sendMessage, status, stop, setMessages, regenerate } =
     useChat({
       transport: new DefaultChatTransport({
         api: "/api/chat",
       }),
-      onFinish: async ({message}) => {
-        const textPart = message.parts.find(
-          (part) => part.type === "text",
-        );
-        
-        if (textPart) {
+      onFinish: async ({ message }) => {
+        const textPart = message.parts.find((part) => part.type === "text");
+
+        if (message.role === "assistant" && textPart) {
           // Send the assistant's message to the server for saving
-          await fetch("/api/message", {
+          const res = await fetch("/api/message", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -81,9 +79,32 @@ export function ChatInterface() {
               chatId: chatId,
             }),
           });
+          const savedMsg = await res.json();
+          console.log("[onFinish] Assistant message saved to DB:", savedMsg);
+
+          // Compare IDs
+          console.log(
+            "[onFinish] Comparing frontend message ID:",
+            message.id,
+            "with backend message ID:",
+            savedMsg.id
+          );
+
+          // Optionally: Replace the temporary message with the saved one
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === message.id
+                ? {
+                    ...m,
+                    id: savedMsg.id,
+                    parts: [{ type: "text", text: savedMsg.content }],
+                  }
+                : m
+            )
+          );
         }
+        scrollToBottom();
       },
-      
     });
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -93,8 +114,46 @@ export function ChatInterface() {
       return;
     }
 
-    // Now send the message and files to the AI
+    // Send the message and files to the AI
+    console.log("[handleSubmit] Sending message:", {
+      text: input,
+      files,
+      chatId,
+    });
+
+    // Use sendMessage and handle the response to save the user message
     sendMessage({ text: input, files });
+
+    // Save the user's message to the database immediately after sending it.
+    // We don't need to `await` this, as it can happen in the background.
+    fetch("/api/message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: input,
+        role: "user",
+        chatId: chatId,
+      }),
+    })
+      .then((res) => res.json())
+      .then((savedMsg) => {
+        console.log("[handleSubmit] User message saved to DB:", savedMsg);
+        // Replace the temporary message ID with the one from the database
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.role === "user" && !msg.id.startsWith("cmf") // A simple check for temporary ID
+              ? { ...msg, id: savedMsg.id }
+              : msg
+          )
+        );
+        console.log(
+          "[handleSubmit] Replaced temporary user message ID with permanent one."
+        );
+      })
+      .catch((error) => {
+        console.error("[handleSubmit] Error saving user message:", error);
+      });
+
     setInput("");
     setFiles(undefined);
 
@@ -108,41 +167,75 @@ export function ChatInterface() {
   const onDrop = (acceptedFiles: File[]) => {
     // Convert the acceptedFiles array to a FileList
     const dataTransfer = new DataTransfer();
-    acceptedFiles.forEach(file => dataTransfer.items.add(file));
+    acceptedFiles.forEach((file) => dataTransfer.items.add(file));
     setFiles(dataTransfer.files);
   };
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop, multiple: true });
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    multiple: true,
+  });
 
   const handleRegenerate = async () => {
     // Find the last assistant message and the user message that came before it
     const lastMessage = messages[messages.length - 1];
     const userMessage = messages[messages.length - 2];
 
+    console.log("[handleRegenerate] Last message:", lastMessage);
+    console.log("[handleRegenerate] Previous user message:", userMessage);
+
     if (!userMessage) {
-        // No user message to regenerate from, do nothing
-        return;
+      // No user message to regenerate from, do nothing
+      console.warn("[handleRegenerate] No user message to regenerate from");
+      return;
     }
 
-    handleDelete(lastMessage.id);
-    handleDelete(userMessage.id);
-    regenerate();
+    const deletedAI = await deleteFromDb(lastMessage.id);
+    if (deletedAI) {
+      regenerate();
+      console.log("[handleRegenerate] Regenerate called");
+    }
   };
 
-  const handleDelete = async (id: string) => {
+  const deleteFromDb = async (id: string) => {
     const index = messages.findIndex((message) => message.id === id);
+    console.log(
+      "[deleteFromDb] Deleting message at index:",
+      index,
+      "with id:",
+      id
+    );
+
     try {
-      await fetch('/api/message', {
-        method: 'DELETE',
+      const response = await fetch("/api/message", {
+        method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id: messages[index].id }),
       });
-      // Remove the message from local state
-      setMessages((prevMessages) => prevMessages.filter((message) => message.id !== id));
+      console.log("[deleteFromDb] DELETE response status:", response.status);
+
+      if (response.ok) {
+        console.log("[deleteFromDb] Message deleted successfully:", id);
+        return true;
+      }
     } catch (error) {
       console.error("Failed to delete message:", error);
+      return false;
+    }
+    return false;
+  };
+
+  const handleDelete = async (id: string) => {
+    console.log("[handleDelete] Attempting to delete message:", id);
+    const deleted = await deleteFromDb(id);
+    if (deleted) {
+      // Remove the message from local state
+      setMessages((prevMessages) =>
+        prevMessages.filter((message) => message.id !== id)
+      );
+      console.log("[handleDelete] Message removed from local state:", id);
     }
   };
 
@@ -151,8 +244,9 @@ export function ChatInterface() {
   };
 
   useEffect(() => {
-    scrollToBottom();    
-  }, [messages]);
+    initializeChat();
+    scrollToBottom();
+  }, []);
 
   return (
     <>
@@ -162,8 +256,8 @@ export function ChatInterface() {
             message.parts.map((part, i) => {
               switch (part.type) {
                 case "text":
-                  console.log("Messages updated:", messages)
-                  
+                  console.log("Messages updated:", messages);
+
                   const lastIndex = index === messages.length - 1;
                   return (
                     <div
@@ -173,12 +267,13 @@ export function ChatInterface() {
                       }`}
                     >
                       <MessageCard
-                        content={<FormattedMessage>{part.text}</FormattedMessage>}
+                        content={
+                          <FormattedMessage>{part.text}</FormattedMessage>
+                        }
                         isUser={message.role === "user"}
                         lastIndex={lastIndex}
                       />
                       <div className="mx-15 flex gap-4">
-
                         <FaRegTrashAlt
                           className="cursor-pointer"
                           onClick={() => handleDelete(message.id)}
@@ -232,7 +327,11 @@ export function ChatInterface() {
         {status === "submitted" && (
           <MessageCard
             content={
-              <SyncLoader size={10} className="text-primary" speedMultiplier={0.7} />
+              <SyncLoader
+                size={10}
+                className="text-primary"
+                speedMultiplier={0.7}
+              />
             }
             isUser={false}
             lastIndex={true}
@@ -247,18 +346,19 @@ export function ChatInterface() {
           }}
           className="flex w-full space-x-2"
         >
-          <div {...getRootProps()}
+          <div
+            {...getRootProps()}
             className="flex-1 cursor-pointer rounded-md border border-dashed border-input text-sm
             text-muted-foreground flex items-center px-2 justify-center"
           >
-            <input id="picture"
-              type="file"
-              {...getInputProps()}
-            />
+            <input id="picture" type="file" {...getInputProps()} />
             {files && files.length > 0 ? (
               <span>{files.length} file(s) selected</span>
             ) : (
-              <p>Drag 'n' drop some files here, or click to select files</p>
+              <p>
+                Drag &apos;n&apos; drop some files here, or click to select
+                files
+              </p>
             )}
           </div>
           <GradientBorder classNameP="flex-8">

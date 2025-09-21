@@ -1,12 +1,10 @@
 // @/app/api/message/route.tsx
-// import { GetUser } from "@/auth/AuthFunctions";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import {
   Message_CreateWithAttachment,
   Message_Delete,
-  Message_GetById
+  Message_GetById,
 } from "@/prisma/functions/Message/MessageFun";
-// import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
   // get id from request
@@ -14,7 +12,7 @@ export async function GET(request: Request) {
 
   // fetch the chat from the database
   const message = await Message_GetById("cmfmf4qq30000vfb05w8acl7f");
-  
+
   if (!message) {
     return new Response("Message not found", { status: 404 });
   }
@@ -35,9 +33,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  
-  const { content, role,  attachments } = body;
-  if (!content || !role ) {
+
+  const { content, role, attachments } = body;
+  if (!content || !role) {
     return new Response("Content, role, and chatId are required", {
       status: 400,
     });
@@ -52,7 +50,7 @@ export async function POST(request: Request) {
   const newMessage = await Message_CreateWithAttachment({
     content,
     role,
-    chatId:"cmfmf4qq30000vfb05w8acl7f",
+    chatId: "cmfmf4qq30000vfb05w8acl7f",
     attachments: attachments,
   });
   if (!newMessage) {
@@ -83,11 +81,16 @@ export async function DELETE(request: Request) {
       },
     });
   } catch (error) {
-    if (error.code === 'P2025') {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "P2025"
+    ) {
       return new Response("Message not found", { status: 404 });
     }
+    // Return a generic 500 for all other server errors
+    console.error("Error deleting message:", error);
+    return new Response("Failed to delete message", { status: 500 });
   }
-  // Return a generic 500 for all other server errors
-  console.error("Error deleting message:", error);
-  return new Response("Failed to delete message", { status: 500 });
 }
