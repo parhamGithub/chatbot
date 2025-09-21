@@ -179,14 +179,13 @@ export function ChatInterface() {
   const handleRegenerate = async () => {
     // Find the last assistant message and the user message that came before it
     const lastMessage = messages[messages.length - 1];
-    const userMessage = messages[messages.length - 2];
-
     console.log("[handleRegenerate] Last message:", lastMessage);
-    console.log("[handleRegenerate] Previous user message:", userMessage);
 
-    if (!userMessage) {
-      // No user message to regenerate from, do nothing
-      console.warn("[handleRegenerate] No user message to regenerate from");
+    if (lastMessage.role === "user") {
+      console.warn(
+        "[handleRegenerate] Last message is from user"
+      );
+      regenerate();
       return;
     }
 
@@ -200,9 +199,9 @@ export function ChatInterface() {
   const deleteFromDb = async (id: string) => {
     const index = messages.findIndex((message) => message.id === id);
     console.log(
-      "[deleteFromDb] Deleting message at index:",
+      "[deleteFromDb] Deleting message at index: ",
       index,
-      "with id:",
+      "with id: ",
       id
     );
 
@@ -214,28 +213,28 @@ export function ChatInterface() {
         },
         body: JSON.stringify({ id: messages[index].id }),
       });
-      console.log("[deleteFromDb] DELETE response status:", response.status);
+      console.log("[deleteFromDb] DELETE response status: ", response.status);
 
       if (response.ok) {
-        console.log("[deleteFromDb] Message deleted successfully:", id);
+        console.log("[deleteFromDb] Message deleted successfully: ", id);
         return true;
       }
     } catch (error) {
-      console.error("Failed to delete message:", error);
+      console.error("Failed to delete message: ", error);
       return false;
     }
     return false;
   };
 
   const handleDelete = async (id: string) => {
-    console.log("[handleDelete] Attempting to delete message:", id);
+    console.log("[handleDelete] Attempting to delete message: ", id);
     const deleted = await deleteFromDb(id);
     if (deleted) {
       // Remove the message from local state
       setMessages((prevMessages) =>
         prevMessages.filter((message) => message.id !== id)
       );
-      console.log("[handleDelete] Message removed from local state:", id);
+      console.log("[handleDelete] Message removed from local state: ", id);
     }
   };
 
@@ -273,19 +272,20 @@ export function ChatInterface() {
                         isUser={message.role === "user"}
                         lastIndex={lastIndex}
                       />
-                      <div className="mx-15 flex gap-4">
-                        <FaRegTrashAlt
-                          className="cursor-pointer"
-                          onClick={() => handleDelete(message.id)}
-                        />
-
-                        <FaRedo
-                          className={`cursor-pointer ${
-                            !lastIndex ? "hidden" : ""
-                          }`}
-                          onClick={handleRegenerate}
-                        />
-                      </div>
+                        {
+                          lastIndex && (
+                            <div className="mx-15 flex gap-4">
+                              <FaRegTrashAlt
+                                className="cursor-pointer"
+                                onClick={() => handleDelete(message.id)}
+                              />
+                              <FaRedo
+                                className="cursor-pointer"
+                                onClick={handleRegenerate}
+                              />
+                            </div>
+                          )
+                        }
                     </div>
                   );
                 case "file":
