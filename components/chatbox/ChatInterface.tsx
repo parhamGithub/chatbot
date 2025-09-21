@@ -17,18 +17,7 @@ import { useDropzone } from "react-dropzone";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import { Message } from "@/generated/prisma";
 
-function dbMessageToUIMessage(msg: Message) {
-  return {
-    id: msg.id ?? "",
-    role: msg.role === "user" ? ("user" as const) : ("assistant" as const),
-    parts: [
-      {
-        type: "text" as const,
-        text: msg.content ?? "",
-      },
-    ],
-  };
-}
+
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -37,26 +26,6 @@ export function ChatInterface() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const initializeChat = async () => {
-    try {
-      console.log("[initializeChat] Fetching chat from DB...");
-      const response = await fetch("/api/chat/db");
-
-      if (!response.ok) {
-        console.error("[initializeChat] Failed to get or create chat");
-        throw new Error("Failed to get or create chat");
-      }
-      const chat = (await response.json()) as Chat_GetById;
-      console.log("[initializeChat] Chat fetched:", chat);
-
-      setChatId(chat?.id || "");
-      setMessages((chat?.Messages || []).map(dbMessageToUIMessage));
-      console.log("[initializeChat] Messages set:", chat?.Messages || []);
-    } catch (error) {
-      console.error("Initialization error:", error);
-    }
-  };
 
   const { messages, sendMessage, status, stop, setMessages, regenerate } =
     useChat({
@@ -80,11 +49,11 @@ export function ChatInterface() {
             }),
           });
           const savedMsg = await res.json();
-          console.log("[onFinish] Assistant message saved to DB:", savedMsg);
+          console.log("[onFinish] Assistant message saved to DB: ", savedMsg);
 
           // Compare IDs
           console.log(
-            "[onFinish] Comparing frontend message ID:",
+            "[onFinish] Comparing frontend message ID: ",
             message.id,
             "with backend message ID:",
             savedMsg.id
@@ -107,6 +76,48 @@ export function ChatInterface() {
       },
     });
 
+  useEffect(() => {
+    initializeChat();
+    scrollToBottom();
+  }, []);
+
+  const initializeChat = async () => {
+    try {
+      console.log("[initializeChat] Fetching chat from DB...");
+      const response = await fetch("/api/chat/db");
+
+      if (!response.ok) {
+        console.error("[initializeChat] Failed to get or create chat");
+        throw new Error("Failed to get or create chat");
+      }
+      const chat = (await response.json()) as Chat_GetById;
+      console.log("[initializeChat] Chat fetched: ", chat);
+
+      setChatId(chat?.id || "");
+      setMessages((chat?.Messages || []).map(dbMessageToUIMessage));
+      console.log("[initializeChat] Messages set: ", chat?.Messages || []);
+    } catch (error) {
+      console.error("Initialization error: ", error);
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  function dbMessageToUIMessage(msg: Message) {
+    return {
+      id: msg.id ?? "",
+      role: msg.role === "user" ? ("user" as const) : ("assistant" as const),
+      parts: [
+        {
+          type: "text" as const,
+          text: msg.content ?? "",
+        },
+      ],
+    };
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -115,7 +126,7 @@ export function ChatInterface() {
     }
 
     // Send the message and files to the AI
-    console.log("[handleSubmit] Sending message:", {
+    console.log("[handleSubmit] Sending message: ", {
       text: input,
       files,
       chatId,
@@ -137,7 +148,7 @@ export function ChatInterface() {
     })
       .then((res) => res.json())
       .then((savedMsg) => {
-        console.log("[handleSubmit] User message saved to DB:", savedMsg);
+        console.log("[handleSubmit] User message saved to DB: ", savedMsg);
         // Replace the temporary message ID with the one from the database
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
@@ -151,7 +162,7 @@ export function ChatInterface() {
         );
       })
       .catch((error) => {
-        console.error("[handleSubmit] Error saving user message:", error);
+        console.error("[handleSubmit] Error saving user message: ", error);
       });
 
     setInput("");
@@ -179,7 +190,7 @@ export function ChatInterface() {
   const handleRegenerate = async () => {
     // Find the last assistant message and the user message that came before it
     const lastMessage = messages[messages.length - 1];
-    console.log("[handleRegenerate] Last message:", lastMessage);
+    console.log("[handleRegenerate] Last message: ", lastMessage);
 
     if (lastMessage.role === "user") {
       console.warn(
@@ -237,15 +248,6 @@ export function ChatInterface() {
       console.log("[handleDelete] Message removed from local state: ", id);
     }
   };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    initializeChat();
-    scrollToBottom();
-  }, []);
 
   return (
     <>
