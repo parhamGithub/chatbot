@@ -2,7 +2,6 @@ import { convertToModelMessages, streamText, UIMessage } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { MODEL } from "@/generated/prisma";
 import { openai } from "@ai-sdk/openai";
-import { prisma } from "@/prisma/prisma";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
