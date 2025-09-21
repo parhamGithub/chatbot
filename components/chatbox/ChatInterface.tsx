@@ -15,7 +15,7 @@ import { useDropzone } from "react-dropzone";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import { Message } from "@/generated/prisma";
 
-
+  
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
   const [files, setFiles] = useState<FileList | undefined>(undefined);

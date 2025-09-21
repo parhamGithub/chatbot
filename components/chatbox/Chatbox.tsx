@@ -4,7 +4,7 @@ import { ChatInterface } from "./ChatInterface";
 export function Chatbox() {
   return (
     <div className="w-full flex justify-center">
-      <Card className="w-full flex flex-col">
+      <Card className="w-full flex flex-col min-h-screen">
         <CardHeader className="w-full">
           <CardTitle className="bolder pt-5 text-3xl text-center">Chatbot</CardTitle>
         </CardHeader>
