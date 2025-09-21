@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, FormEvent } from "react";
 import Image from "next/image";
-import { FaStop } from "react-icons/fa";
+import { FaStop, FaRegTrashAlt, FaRedo } from "react-icons/fa";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MessageCard } from "@/components/chatbox/MessageCard";
@@ -10,13 +10,10 @@ import { SyncLoader } from "react-spinners";
 import { GradientBorder } from "../tools/gradientBorder";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { FaRegTrashAlt } from "react-icons/fa";
-import { FaRedo } from "react-icons/fa";
 import { FormattedMessage } from "../tools/formattedMessage";
 import { useDropzone } from "react-dropzone";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import { Message } from "@/generated/prisma";
-
 
 
 export function ChatInterface() {
@@ -55,7 +52,7 @@ export function ChatInterface() {
           console.log(
             "[onFinish] Comparing frontend message ID: ",
             message.id,
-            "with backend message ID:",
+            "with backend message ID: ",
             savedMsg.id
           );
 
@@ -81,7 +78,7 @@ export function ChatInterface() {
     scrollToBottom();
   }, []);
 
-  const initializeChat = async () => {
+  const initializeChat = async (): Promise<void> => {
     try {
       console.log("[initializeChat] Fetching chat from DB...");
       const response = await fetch("/api/chat/db");
@@ -101,11 +98,12 @@ export function ChatInterface() {
     }
   };
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  function dbMessageToUIMessage(msg: Message) {
+  function dbMessageToUIMessage(msg: Message):
+  {id: string; role: "user" | "assistant"; parts: { type: "text"; text: string }[]} {
     return {
       id: msg.id ?? "",
       role: msg.role === "user" ? ("user" as const) : ("assistant" as const),
@@ -118,7 +116,7 @@ export function ChatInterface() {
     };
   }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
     if (!input.trim() || !chatId) {
