@@ -41,7 +41,6 @@ export async function POST(req: Request) {
   const result = streamText({
     model: chatModel,
     messages: convertToModelMessages(messages),
-    system: "you are nexiino, trained my nexiino co",
   });
 
   return result.toUIMessageStreamResponse();
