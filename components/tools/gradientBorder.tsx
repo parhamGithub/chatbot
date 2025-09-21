@@ -10,7 +10,7 @@ export const GradientBorder = ({
   rounded?: string;
 }) => {
   return (
-    <div className={`relative p-[2px] ${classNameP}`}>
+    <div className={`relative p-[2px] h-fit ${classNameP}`}>
       <div
         className={`absolute inset-0 bg-gradient-to-r
                 from-red-500 via-purple-500 to-blue-500 ${rounded}`}

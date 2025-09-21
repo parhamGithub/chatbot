@@ -361,7 +361,7 @@ export function ChatInterface() {
               </p>
             )}
           </div>
-          <GradientBorder classNameP="flex-8">
+          <GradientBorder classNameP="flex-8 m-auto">
             <Input
               placeholder="Type your message..."
               value={input}
