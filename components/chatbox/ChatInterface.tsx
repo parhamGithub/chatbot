@@ -344,7 +344,7 @@ export function ChatInterface() {
           onSubmit={(e) => {
             handleSubmit(e);
           }}
-          className="flex w-full space-x-2"
+          className="flex flex-col md:flex-row w-full space-y-2 md:space-y-0 md:space-x-2"
         >
           <div
             {...getRootProps()}
@@ -361,12 +361,11 @@ export function ChatInterface() {
               </p>
             )}
           </div>
-          <GradientBorder classNameP="flex-8">
+          <GradientBorder classNameP="flex-1 md:flex-8 m-auto w-full md:w-auto flex-1">
             <Input
               placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.currentTarget.value)}
-              className="focus:outline-none focus:ring-0 focus:ring-offset-0"
             />
           </GradientBorder>
           <Button
