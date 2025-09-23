@@ -14,6 +14,7 @@ import { FormattedMessage } from "../tools/formattedMessage";
 import { useDropzone } from "react-dropzone";
 import { Chat_GetById } from "@/prisma/functions/Chat/ChatFun";
 import { Message } from "@/generated/prisma";
+import { Textarea } from "../ui/textarea";
 
 export function ChatInterface() {
   const [input, setInput] = useState<string>("");
@@ -246,6 +247,14 @@ export function ChatInterface() {
     }
   };
 
+  const handleKeyDown = (e) => {
+    // Check if Enter key is pressed and Shift key is not
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   return (
     <>
       <CardContent className="w-full flex flex-col space-y-4 p-6 pt-0">
@@ -361,10 +370,11 @@ export function ChatInterface() {
             )}
           </div>
           <GradientBorder classNameP="flex-1 md:flex-8 m-auto w-full md:w-auto flex-1">
-            <Input
-              placeholder="Type your message..."
-              value={input}
+            <Textarea
               onChange={(e) => setInput(e.currentTarget.value)}
+              onKeyDown={handleKeyDown}
+              value={input}
+              placeholder="Type your message..."
             />
           </GradientBorder>
           <Button
