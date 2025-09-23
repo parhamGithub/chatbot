@@ -38,7 +38,7 @@ export function MessageCard({
             className={cn(
               "w-fit rounded-3xl",
               isUser
-                ? "bg-primary text-primary-foreground rounded-br-none"
+                ? "bg-input text-primary-foreground rounded-br-none"
                 : "bg-muted text-muted-foreground rounded-bl-none"
             )}
           >
@@ -50,7 +50,7 @@ export function MessageCard({
           className={cn(
             "w-fit rounded-3xl max-w-1/2",
             isUser
-              ? "bg-primary text-primary-foreground rounded-br-none"
+              ? "bg-ring text-primary-foreground rounded-br-none"
               : "bg-muted text-muted-foreground rounded-bl-none"
           )}
         >

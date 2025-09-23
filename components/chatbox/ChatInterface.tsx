@@ -361,7 +361,7 @@ export function ChatInterface() {
               <p>
                 Drag &apos;n&apos; drop some files here, or click to select
                 files
-              </p>
+              </p>  
             )}
           </div>
           <GradientBorder classNameP="flex-1 md:flex-8 m-auto w-full md:w-auto flex-1">
