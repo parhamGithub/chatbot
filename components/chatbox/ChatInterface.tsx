@@ -116,9 +116,7 @@ export function ChatInterface() {
     };
   }
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-
+  const handleSubmit = async (): Promise<void> => {
     if (!input.trim() || !chatId) {
       return;
     }
@@ -247,11 +245,11 @@ export function ChatInterface() {
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Check if Enter key is pressed and Shift key is not
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e);
+      handleSubmit();
     }
   };
 
@@ -349,9 +347,6 @@ export function ChatInterface() {
       </CardContent>
       <CardFooter className="w-full flex items-center space-x-2 p-4 border-t">
         <form
-          onSubmit={(e) => {
-            handleSubmit(e);
-          }}
           className="flex flex-col md:flex-row w-full space-y-2 md:space-y-0 md:space-x-2"
         >
           <div
