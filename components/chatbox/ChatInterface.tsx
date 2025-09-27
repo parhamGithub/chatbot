@@ -1,8 +1,7 @@
 "use client";
-import { useState, useRef, useEffect, FormEvent } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { FaStop, FaRegTrashAlt, FaRedo } from "react-icons/fa";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MessageCard } from "@/components/chatbox/MessageCard";
 import { CardContent, CardFooter } from "@/components/ui/card";
@@ -102,8 +101,11 @@ export function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  function dbMessageToUIMessage(msg: Message):
-  {id: string; role: "user" | "assistant"; parts: { type: "text"; text: string }[]} {
+  function dbMessageToUIMessage(msg: Message): {
+    id: string;
+    role: "user" | "assistant";
+    parts: { type: "text"; text: string }[];
+  } {
     return {
       id: msg.id ?? "",
       role: msg.role === "user" ? ("user" as const) : ("assistant" as const),
@@ -189,9 +191,7 @@ export function ChatInterface() {
     console.log("[handleRegenerate] Last message: ", lastMessage);
 
     if (lastMessage.role === "user") {
-      console.warn(
-        "[handleRegenerate] Last message is from user"
-      );
+      console.warn("[handleRegenerate] Last message is from user");
       regenerate();
       return;
     }
@@ -278,20 +278,18 @@ export function ChatInterface() {
                         isUser={message.role === "user"}
                         lastIndex={lastIndex}
                       />
-                        {
-                          lastIndex && (
-                            <div className="mx-15 flex gap-4">
-                              <FaRegTrashAlt
-                                className="cursor-pointer"
-                                onClick={() => handleDelete(message.id)}
-                              />
-                              <FaRedo
-                                className="cursor-pointer"
-                                onClick={handleRegenerate}
-                              />
-                            </div>
-                          )
-                        }
+                      {lastIndex && (
+                        <div className="mx-15 flex gap-4">
+                          <FaRegTrashAlt
+                            className="cursor-pointer"
+                            onClick={() => handleDelete(message.id)}
+                          />
+                          <FaRedo
+                            className="cursor-pointer"
+                            onClick={handleRegenerate}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 case "file":
@@ -346,9 +344,7 @@ export function ChatInterface() {
         <div ref={messagesEndRef} />
       </CardContent>
       <CardFooter className="w-full flex items-center space-x-2 p-4 border-t">
-        <form
-          className="flex flex-col md:flex-row w-full space-y-2 md:space-y-0 md:space-x-2"
-        >
+        <form className="flex flex-col md:flex-row w-full space-y-2 md:space-y-0 md:space-x-2">
           <div
             {...getRootProps()}
             className="flex-1 cursor-pointer rounded-md border border-dashed border-input text-sm
@@ -361,7 +357,7 @@ export function ChatInterface() {
               <p>
                 Drag &apos;n&apos; drop some files here, or click to select
                 files
-              </p>  
+              </p>
             )}
           </div>
           <GradientBorder classNameP="flex-1 md:flex-8 m-auto w-full md:w-auto flex-1">
